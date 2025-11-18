@@ -11,21 +11,34 @@ class ProductsLoaded extends ProductsState {
   final List<String> categories;
   final List<Product>? filteredProducts;
 
+  final String searchQuery;
+  final String? selectedCategory;
+  final String? sortOrder;
+
   ProductsLoaded({
     required this.products,
     required this.categories,
     this.filteredProducts,
+    required this.searchQuery,
+    required this.selectedCategory,
+    this.sortOrder,
   });
 
   ProductsLoaded copyWith({
     List<Product>? products,
     List<String>? categories,
     List<Product>? filteredProducts,
+    String? searchQuery,
+    String? selectedCategory,
+    String? sortOrder,
   }) {
     return ProductsLoaded(
       products: products ?? this.products,
       categories: categories ?? this.categories,
       filteredProducts: filteredProducts ?? this.filteredProducts,
+      searchQuery: searchQuery ?? this.searchQuery,
+      selectedCategory: selectedCategory ?? this.selectedCategory,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 }

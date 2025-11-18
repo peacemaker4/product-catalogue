@@ -16,9 +16,18 @@ class ProductListPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProductsLoaded) {
             final products = state.filteredProducts ?? state.products;
-            return RefreshIndicator(
-              onRefresh: () async => context.read<ProductsBloc>().add(RefreshProductsEvent()),
-              child: buildProductsGrid(products)
+            return Column(
+              children: [
+                buildFilterContainer(context),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      context.read<ProductsBloc>().add(RefreshProductsEvent());
+                    },
+                    child: buildProductsGrid(products),
+                  ),
+                ),
+              ],
             );
           } else if (state is ProductsError) {
             return Center(child: Text(state.message));
@@ -28,6 +37,85 @@ class ProductListPage extends StatelessWidget {
       ),
     );
   }
+
+  Widget buildFilterContainer(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        children: [
+          Expanded(child: buildSearchField(context)),
+          const SizedBox(width: 8),
+          buildCategoryDropdown(context),
+          const SizedBox(width: 8),
+          buildSortDropdown(context),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSearchField(BuildContext context) {
+    return TextField(
+      decoration: const InputDecoration(
+        hintText: 'Search products',
+        border: OutlineInputBorder(),
+        isDense: true,
+      ),
+      onChanged: (value) {
+        context.read<ProductsBloc>().add(SearchProductsEvent(value));
+      },
+    );
+  }
+
+  Widget buildCategoryDropdown(BuildContext context) {
+    return BlocBuilder<ProductsBloc, ProductsState>(
+      builder: (context, state) {
+        if (state is! ProductsLoaded) return const SizedBox.shrink();
+        final categories = state.categories;
+        return DropdownButton<String>(
+          hint: const Text('Category'),
+          items: [
+            const DropdownMenuItem(
+              value: null,
+              child: Text('Category'),
+            ),
+            ...categories.map(
+              (cat) => DropdownMenuItem(
+                value: cat,
+                child: Text(cat),
+              ),
+            ),
+          ],
+          onChanged: (value) {
+            context
+                .read<ProductsBloc>()
+                .add(FilterByCategoryEvent(value ?? ''));
+          },
+        );
+      },
+    );
+  }
+
+  Widget buildSortDropdown(BuildContext context) {
+    return BlocBuilder<ProductsBloc, ProductsState>(
+      builder: (context, state) {
+        if (state is! ProductsLoaded) return const SizedBox.shrink();
+
+        return DropdownButton<String>(
+          hint: const Text('Sort (by price)'),
+          value: state.sortOrder,
+          items: const [
+            DropdownMenuItem(value: "", child: Text('None')),
+            DropdownMenuItem(value: "asc", child: Text('Low -> High')),
+            DropdownMenuItem(value: "desc", child: Text('High -> Low')),
+          ],
+          onChanged: (value) {
+            context.read<ProductsBloc>().add(SortProductsEvent(value));
+          },
+        );
+      },
+    );
+  }
+
 
   Widget buildProductsGrid(List<Product> products) {
     return GridView.builder(
