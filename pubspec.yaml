@@ -16,6 +16,7 @@ dependencies:
   json_annotation: ^4.9.0
   realm: ^20.2.0
   retrofit: ^4.6.0
+  talker: ^5.0.2
 
 dev_dependencies:
   flutter_test:
