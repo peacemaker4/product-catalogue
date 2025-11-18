@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^9.1.1
   freezed_annotation: ^3.1.0
+  get_it: ^9.0.5
   json_annotation: ^4.9.0
   realm: ^20.2.0
   retrofit: ^4.6.0
