@@ -29,4 +29,14 @@ class ProductRepository {
       rethrow;
     }
   }
+
+  Future<Product> fetchProductById(int id) async {
+    try{
+      final products = await fetchProducts();
+      return products.firstWhere((p) => p.id == id);
+    } catch(e, st) {
+      _logger.handle(e, st);
+      rethrow;
+    }
+  }
 }

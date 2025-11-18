@@ -1,8 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:product_catalogue/src/core/routes/app_router.dart';
 import 'package:product_catalogue/src/features/products/data/models/product.dart';
-import 'package:product_catalogue/src/features/products/presentation/bloc/products_bloc.dart';
+import 'package:product_catalogue/src/features/products/presentation/bloc/products/products_bloc.dart';
 
+@RoutePage()
 class ProductListPage extends StatelessWidget {
   const ProductListPage({super.key});
 
@@ -24,7 +27,7 @@ class ProductListPage extends StatelessWidget {
                     onRefresh: () async {
                       context.read<ProductsBloc>().add(RefreshProductsEvent());
                     },
-                    child: buildProductsGrid(products),
+                    child: buildProductsGrid(context, products),
                   ),
                 ),
               ],
@@ -117,7 +120,7 @@ class ProductListPage extends StatelessWidget {
   }
 
 
-  Widget buildProductsGrid(List<Product> products) {
+  Widget buildProductsGrid(BuildContext context, List<Product> products) {
     return GridView.builder(
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -127,24 +130,29 @@ class ProductListPage extends StatelessWidget {
         mainAxisExtent: 280,
       ),
       itemCount: products.length,
-      itemBuilder: (context, index) => buildProductItem(products[index]),
+      itemBuilder: (context, index) => buildProductItem(context, products[index]),
     );
   }
 
-  Widget buildProductItem(Product product) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          height: 200,
-          child: buildProductImage(product.image),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: buildProductInfo(product),
-        ),
-      ],
-    );
+  Widget buildProductItem(BuildContext context, Product product) {
+    return GestureDetector(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            height: 200,
+            child: buildProductImage(product.image),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: buildProductInfo(product),
+          ),
+        ],
+      ),
+      onTap: () {
+        context.router.pushPath("/products/${product.id}");
+      }
+    ); 
   }
 
   Widget buildProductImage(String url) {
@@ -154,7 +162,10 @@ class ProductListPage extends StatelessWidget {
         url,
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) { 
-          return const Icon(Icons.image_not_supported); 
+          return const Icon(
+            Icons.image_not_supported,
+            size: 64,
+          ); 
         }
       ),
     );
