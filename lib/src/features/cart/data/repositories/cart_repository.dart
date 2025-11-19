@@ -1,3 +1,4 @@
+import 'package:product_catalogue/src/core/services/logger_service.dart';
 import 'package:product_catalogue/src/features/cart/data/models/cart_item.dart';
 import 'package:product_catalogue/src/features/products/data/models/product.dart';
 import 'package:product_catalogue/src/features/products/data/repositories/product_repository.dart';
@@ -6,6 +7,7 @@ import 'package:realm/realm.dart';
 class CartRepository {
   final Realm realm;
   final ProductRepository productRepository;
+  final _logger = LoggerService().instance;
 
   CartRepository({required this.realm, required this.productRepository});
 
@@ -16,7 +18,8 @@ class CartRepository {
   Future<Product?> getProduct(int productId) async {
     try {
       return await productRepository.fetchProductById(productId);
-    } catch (e) {
+    } catch (e, st) {
+      _logger.handle(e, st);
       return null;
     }
   }

@@ -14,7 +14,10 @@ class CartPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Cart")),
+      appBar: AppBar(
+        title: const Text("Cart"),
+        elevation: 0,
+      ),
       body: BlocBuilder<CartBloc, CartState>(
         builder: (context, state) {
           if (state is CartLoading) {
@@ -23,12 +26,23 @@ class CartPage extends StatelessWidget {
             final items = state.items;
 
             if (items.isEmpty){
-              return const Center(child: Text("Cart is empty"));
+              return const Center(
+                child: Text(
+                  "Cart is empty",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
+              );
             }
             final total = state.total;
 
             return Column(
               children: [
+                buildCartTotal(total),
+
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
@@ -40,22 +54,12 @@ class CartPage extends StatelessWidget {
                     },
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    "Total: \$${total.toStringAsFixed(2)}",
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
               ],
             );
           } else if (state is CartError) {
             return Center(child: Text(state.message));
           }
-          return const SizedBox.shrink();
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -64,22 +68,70 @@ class CartPage extends StatelessWidget {
   Widget _buildCartItem(BuildContext context, Product item) {
     return Card(
       child: ListTile(
+        contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         leading: SizedBox(
           width: 60,
           child: Image.network(
             item.image,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) { 
+              return const Icon(
+                Icons.image_not_supported,
+              ); 
+            }
           ),
         ),
-        title: Text(item.title),
+        title: Text(
+          item.title,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          "\$${item.price.toStringAsFixed(2)}",
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         trailing: IconButton(
           icon: const Icon(Icons.delete),
           onPressed: () {
             context.read<CartBloc>().add(RemoveFromCartEvent(item.id));
           },
         ),
+        onTap:() {
+          context.router.pushPath("/products/${item.id}");
+        },
       ),
     );
   }
+
+  Widget buildCartTotal(double total) {
+  return Container(
+    width: double.infinity,
+    decoration: BoxDecoration(
+      color: Colors.white,
+    ),
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          "Total",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          "\$${total.toStringAsFixed(2)}",
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }

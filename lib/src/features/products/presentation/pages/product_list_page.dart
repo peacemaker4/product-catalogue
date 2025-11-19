@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:product_catalogue/src/core/routes/app_router.dart';
+import 'package:product_catalogue/src/core/utils/shimmer.dart';
 import 'package:product_catalogue/src/features/products/data/models/product.dart';
 import 'package:product_catalogue/src/features/products/presentation/bloc/products/products_bloc.dart';
 
@@ -22,11 +23,18 @@ class ProductListPage extends StatelessWidget {
             },
           )
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: buildSearchField(context),
+          ),
+        ),
       ),
       body: BlocBuilder<ProductsBloc, ProductsState>(
         builder: (context, state) {
           if (state is ProductsLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return buildProductsGridPlaceholder();
           } else if (state is ProductsLoaded) {
             final products = state.filteredProducts ?? state.products;
             return Column(
@@ -53,14 +61,12 @@ class ProductListPage extends StatelessWidget {
 
   Widget buildFilterContainer(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          Expanded(child: buildSearchField(context)),
+          Expanded(child: buildCategoryDropdown(context)),
           const SizedBox(width: 8),
-          buildCategoryDropdown(context),
-          const SizedBox(width: 8),
-          buildSortDropdown(context),
+          Expanded(child: buildSortDropdown(context)),
         ],
       ),
     );
@@ -72,6 +78,7 @@ class ProductListPage extends StatelessWidget {
         hintText: 'Search products',
         border: OutlineInputBorder(),
         isDense: true,
+        prefixIcon: Icon(Icons.search, color: Colors.black54),
       ),
       onChanged: (value) {
         context.read<ProductsBloc>().add(SearchProductsEvent(value));
@@ -84,17 +91,18 @@ class ProductListPage extends StatelessWidget {
       builder: (context, state) {
         if (state is! ProductsLoaded) return const SizedBox.shrink();
         final categories = state.categories;
-        return DropdownButton<String>(
+        return DropdownButtonFormField<String>(
           hint: const Text('Category'),
+          initialValue: state.selectedCategory,
           items: [
             const DropdownMenuItem(
-              value: null,
-              child: Text('Category'),
+              value: "",
+              child: Text("ALL"),
             ),
             ...categories.map(
               (cat) => DropdownMenuItem(
                 value: cat,
-                child: Text(cat),
+                child: Text(cat.toUpperCase()),
               ),
             ),
           ],
@@ -103,6 +111,7 @@ class ProductListPage extends StatelessWidget {
                 .read<ProductsBloc>()
                 .add(FilterByCategoryEvent(value ?? ''));
           },
+          style: TextStyle(color: Colors.black),
         );
       },
     );
@@ -113,17 +122,18 @@ class ProductListPage extends StatelessWidget {
       builder: (context, state) {
         if (state is! ProductsLoaded) return const SizedBox.shrink();
 
-        return DropdownButton<String>(
-          hint: const Text('Sort (by price)'),
-          value: state.sortOrder,
+        return DropdownButtonFormField<String>(
+          hint: const Text("Sort (by price)"),
+          initialValue: state.sortOrder,
           items: const [
-            DropdownMenuItem(value: "", child: Text('None')),
-            DropdownMenuItem(value: "asc", child: Text('Low -> High')),
-            DropdownMenuItem(value: "desc", child: Text('High -> Low')),
+            DropdownMenuItem(value: "", child: Text("Default Sort")),
+            DropdownMenuItem(value: "asc", child: Text("Price (Low -> High)")),
+            DropdownMenuItem(value: "desc", child: Text("Price (High -> Low)")),
           ],
           onChanged: (value) {
             context.read<ProductsBloc>().add(SortProductsEvent(value));
           },
+          style: TextStyle(color: Colors.black),
         );
       },
     );
@@ -196,6 +206,40 @@ class ProductListPage extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ],
+    );
+  }
+
+  Widget buildProductsGridPlaceholder() {
+    return GridView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        mainAxisExtent: 280,
+      ),
+      itemCount: 6,
+      itemBuilder: (_, __) => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Shimmer(child: 
+            Column(
+              children: [
+                Container(
+                  height: 200, 
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(12), // rounded corners
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(height: 40, color: Colors.grey.shade300),
+              ],
+            )
+          ),
+          
+        ],
+      ),
     );
   }
 

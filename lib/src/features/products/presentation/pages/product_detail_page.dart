@@ -7,7 +7,7 @@ import 'package:product_catalogue/src/features/products/data/repositories/produc
 import 'package:product_catalogue/src/features/products/presentation/bloc/product_detail/product_detail_bloc.dart';
 
 @RoutePage()
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends StatefulWidget {
   final int id;
   const ProductDetailPage({
     super.key, 
@@ -15,11 +15,62 @@ class ProductDetailPage extends StatelessWidget {
   });
 
   @override
+  State<ProductDetailPage> createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> 
+    with SingleTickerProviderStateMixin {
+  late AnimationController _imageAnimController;
+  late Animation<double> _imageOpacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageAnimController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _imageOpacityAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.3)
+            .chain(CurveTween(curve: Curves.easeOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.3, end: 1.0)
+            .chain(CurveTween(curve: Curves.easeIn)),
+        weight: 50,
+      ),
+    ]).animate(_imageAnimController);
+  }
+
+  void _animateImage() {
+    _imageAnimController.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    _imageAnimController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    context.read<ProductDetailBloc>().add(LoadProductDetailEvent(id));
+    context.read<ProductDetailBloc>().add(LoadProductDetailEvent(widget.id));
 
     return Scaffold(
-      appBar: AppBar(title: Text("Details")),
+      appBar: AppBar(
+        title: Text("Details"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.shopping_cart),
+            onPressed: () {
+              context.router.pushPath("/cart");
+            },
+          )
+        ],
+      ),
       body: BlocBuilder<ProductDetailBloc, ProductDetailState>(
         builder: (context, state) {
           if (state is ProductDetailLoading) {
@@ -42,8 +93,16 @@ class ProductDetailPage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          buildProductImage(product.image),
-          buildProductInfo(product),
+          FadeTransition(
+            opacity: _imageOpacityAnimation,
+            child: Column(
+              children: [
+                buildProductImage(product.image),
+                buildProductInfo(product),
+              ],
+            ),
+          ),
+          
           const Spacer(),
           buildAddToCartButton(context, product.id)
         ],
@@ -51,40 +110,68 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
-  Widget buildAddToCartButton(BuildContext context, int productId) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          context.read<CartBloc>().add(AddToCartEvent(productId));
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Added to cart"),
-              duration: Duration(milliseconds: 800),
+   Widget buildAddToCartButton(BuildContext context, int productId) {
+    return BlocBuilder<CartBloc, CartState>(
+      builder: (context, state) {
+        if (state is! CartLoaded) return SizedBox.shrink();
+        
+        final isInCart = state.items.any((item) => item.id == productId);
+        
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return ScaleTransition(
+              scale: animation,
+              child: FadeTransition(
+                opacity: animation,
+                child: child,
+              ),
+            );
+          },
+          child: SizedBox(
+            key: ValueKey<bool>(isInCart),
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              icon: Icon(
+                isInCart ? Icons.remove_shopping_cart : Icons.add_shopping_cart,
+                size: 20,
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isInCart 
+                  ? const Color.fromARGB(255, 151, 151, 151) 
+                  : Color.fromARGB(255, 73, 143, 248),
+              ),
+              onPressed: () {
+                if (isInCart) {
+                  context.read<CartBloc>().add(RemoveFromCartEvent(productId));
+                } else {
+                  context.read<CartBloc>().add(AddToCartEvent(productId));
+                }
+                _animateImage();
+              },
+              label: Text(isInCart ? 'Remove from Cart' : 'Add to Cart'),
             ),
-          );
-        },
-        child: const Text('Add to Cart'),
-      ),
+          ),
+        );
+      },
     );
   }
 
   Widget buildProductImage(String url) {
     return Center(
-      child: SizedBox(
-        height: 250,
-        child: Image.network(
-          url,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) { 
-            return const Icon(
-              Icons.image_not_supported,
-              size: 64,
-            ); 
-          }
+        child: SizedBox(
+          height: 250,
+          child: Image.network(
+            url,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) { 
+              return const Icon(
+                Icons.image_not_supported,
+                size: 64,
+              ); 
+            }
+          ),
         ),
-      ),
     );
   }
 
@@ -98,7 +185,18 @@ class ProductDetailPage extends StatelessWidget {
           const SizedBox(height: 8),
           Text("\$${product.price}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text("Category: ${product.category}"),
+          Chip(
+            label: Text(product.category.toUpperCase()),
+            backgroundColor: Colors.white,
+            labelStyle: TextStyle(color: Colors.black54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(
+                width: 0.5,
+                color: Colors.grey
+              )
+            ),
+          ),
           const SizedBox(height: 16),
           Text(product.description),
         ],

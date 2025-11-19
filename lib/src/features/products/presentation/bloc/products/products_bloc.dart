@@ -24,7 +24,7 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState>{
     try{
       final products = await repository.fetchProducts();
       final categories = await repository.fetchCategories();
-      emit(ProductsLoaded(products: products, categories: categories, searchQuery: "", selectedCategory: ""));
+      emit(ProductsLoaded(products: products, categories: categories, searchQuery: "", selectedCategory: "", sortOrder: ""));
     }
     catch(e, st){
       _logger.handle(e, st);
