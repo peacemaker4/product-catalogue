@@ -11,7 +11,6 @@ class ProductRepository {
   Future<List<Product>> fetchProducts() async {
     try{
       final products = await api.getProducts();
-      _logger.info("Products: ${products.length}");
       return products;
     } catch(e, st) {
       _logger.handle(e, st);
@@ -22,7 +21,6 @@ class ProductRepository {
   Future<List<String>> fetchCategories() async {
     try{
       final categories = await api.getCategories();
-      _logger.info("Categories: ${categories.length}");
       return categories;
     } catch(e, st) {
       _logger.handle(e, st);

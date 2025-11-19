@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:product_catalogue/src/features/cart/presentation/bloc/cart_bloc.dart';
 import 'package:product_catalogue/src/features/products/data/models/product.dart';
 import 'package:product_catalogue/src/features/products/data/repositories/product_repository.dart';
 import 'package:product_catalogue/src/features/products/presentation/bloc/product_detail/product_detail_bloc.dart';
@@ -25,7 +26,7 @@ class ProductDetailPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProductDetailLoaded) {
             final product = state.product;
-            return buildProductDetail(product);
+            return buildProductDetail(context, product);
           } else if (state is ProductDetailError) {
             return Center(child: Text(state.message));
           }
@@ -35,7 +36,7 @@ class ProductDetailPage extends StatelessWidget {
     );
   }
 
-  Widget buildProductDetail(Product product){
+  Widget buildProductDetail(BuildContext context, Product product){
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -44,14 +45,27 @@ class ProductDetailPage extends StatelessWidget {
           buildProductImage(product.image),
           buildProductInfo(product),
           const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {},
-              child: const Text('Add to Cart'),
-            ),
-          ),
+          buildAddToCartButton(context, product.id)
         ],
+      ),
+    );
+  }
+
+  Widget buildAddToCartButton(BuildContext context, int productId) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          context.read<CartBloc>().add(AddToCartEvent(productId));
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Added to cart"),
+              duration: Duration(milliseconds: 800),
+            ),
+          );
+        },
+        child: const Text('Add to Cart'),
       ),
     );
   }
