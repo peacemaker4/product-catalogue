@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   auto_route: ^10.2.2
+  bloc_test: ^10.0.0
   dio: ^5.9.0
   flutter:
     sdk: flutter
@@ -15,6 +16,7 @@ dependencies:
   freezed_annotation: ^3.1.0
   get_it: ^9.0.5
   json_annotation: ^4.9.0
+  mocktail: ^1.0.4
   realm: ^20.2.0
   retrofit: ^4.6.0
   rxdart: ^0.28.0
