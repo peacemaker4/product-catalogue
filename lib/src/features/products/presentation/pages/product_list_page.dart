@@ -196,7 +196,7 @@ class ProductListPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          product.title,
+          product.title.isEmpty ? "No title" : product.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),

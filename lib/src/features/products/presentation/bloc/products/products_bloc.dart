@@ -37,17 +37,23 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState>{
   }
 
   Future<void> _onSearchProducts(SearchProductsEvent event, Emitter<ProductsState> emit) async {
-    if (state is ProductsLoaded) {
-      final currentState = state as ProductsLoaded;
+    try{
+      if (state is ProductsLoaded) {
+        final currentState = state as ProductsLoaded;
 
-      final filteredProducts = _applyFilters(
-        products: currentState.products,
-        searchQuery: event.query,
-        category: currentState.selectedCategory,
-        sortOrder: currentState.sortOrder,
-      );
+        final filteredProducts = _applyFilters(
+          products: currentState.products,
+          searchQuery: event.query,
+          category: currentState.selectedCategory,
+          sortOrder: currentState.sortOrder,
+        );
 
-      emit(currentState.copyWith(searchQuery: event.query, filteredProducts: filteredProducts));
+        emit(currentState.copyWith(searchQuery: event.query, filteredProducts: filteredProducts));
+      }
+    }
+    catch(e, st){
+      _logger.handle(e, st);
+      emit(ProductsError(message: e.toString()));
     }
   }
 
@@ -56,35 +62,47 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState>{
   }
 
   Future<void> _onFilterByCategory(FilterByCategoryEvent event, Emitter<ProductsState> emit) async {
-    if (state is ProductsLoaded) {
-      final currentState = state as ProductsLoaded;
+    try{
+      if (state is ProductsLoaded) {
+        final currentState = state as ProductsLoaded;
 
-      final filteredProducts = _applyFilters(
-        products: currentState.products,
-        searchQuery: currentState.searchQuery,
-        category: event.category,
-        sortOrder: currentState.sortOrder,
-      );
+        final filteredProducts = _applyFilters(
+          products: currentState.products,
+          searchQuery: currentState.searchQuery,
+          category: event.category,
+          sortOrder: currentState.sortOrder,
+        );
 
-      emit(currentState.copyWith(selectedCategory: event.category, filteredProducts: filteredProducts));
+        emit(currentState.copyWith(selectedCategory: event.category, filteredProducts: filteredProducts));
+      }
+    }
+    catch(e, st){
+      _logger.handle(e, st);
+      emit(ProductsError(message: e.toString()));
     }
   }
 
   Future<void> _onSortProducts(SortProductsEvent event, Emitter<ProductsState> emit) async {
-    if (state is ProductsLoaded) {
-      final currentState = state as ProductsLoaded;
+    try{
+      if (state is ProductsLoaded) {
+        final currentState = state as ProductsLoaded;
 
-      final filteredProducts = _applyFilters(
-        products: currentState.products,
-        searchQuery: currentState.searchQuery,
-        category: currentState.selectedCategory,
-        sortOrder: event.sortOrder,
-      );
+        final filteredProducts = _applyFilters(
+          products: currentState.products,
+          searchQuery: currentState.searchQuery,
+          category: currentState.selectedCategory,
+          sortOrder: event.sortOrder,
+        );
 
-      emit(currentState.copyWith(
-        filteredProducts: filteredProducts,
-        sortOrder: event.sortOrder,
-      ));
+        emit(currentState.copyWith(
+          filteredProducts: filteredProducts,
+          sortOrder: event.sortOrder,
+        ));
+      }
+    }
+    catch(e, st){
+      _logger.handle(e, st);
+      emit(ProductsError(message: e.toString()));
     }
   }
 

@@ -181,12 +181,15 @@ class _ProductDetailPageState extends State<ProductDetailPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(product.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(
+            product.title.isEmpty ? "No title" : product.title,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)
+          ),
           const SizedBox(height: 8),
           Text("\$${product.price}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Chip(
-            label: Text(product.category.toUpperCase()),
+            label: Text(product.category.isEmpty ? 'Unknown' : product.category.toUpperCase()),
             backgroundColor: Colors.white,
             labelStyle: TextStyle(color: Colors.black54),
             shape: RoundedRectangleBorder(
@@ -198,7 +201,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
             ),
           ),
           const SizedBox(height: 16),
-          Text(product.description),
+          Text(product.description.isEmpty ? "No description" : product.description,),
         ],
       ),
     );

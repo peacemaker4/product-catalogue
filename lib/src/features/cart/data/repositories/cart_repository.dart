@@ -43,15 +43,20 @@ class CartRepository {
   }
   
   Future<List<Product>> getFullCart() async {
-    final List<Product> result = [];
+    try{
+      final List<Product> result = [];
 
-    for (final item in realm.all<CartItem>()) {
-      final product = await productRepository.fetchProductById(item.id);
-      if (product != null) {
+      for (final item in realm.all<CartItem>()) {
+        final product = await productRepository.fetchProductById(item.id);
         result.add(product);
       }
-    }
 
-    return result;
+      return result;
+    }
+    catch(e, st){
+      _logger.handle(e, st);
+      rethrow;
+    }
+    
   }
 }

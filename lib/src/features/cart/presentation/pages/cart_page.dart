@@ -82,7 +82,7 @@ class CartPage extends StatelessWidget {
           ),
         ),
         title: Text(
-          item.title,
+          item.title.isEmpty ? "No title" : item.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
